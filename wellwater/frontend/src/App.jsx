@@ -1,17 +1,7 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import AppRoutes from "./routes/AppRoutes";
 
 function App() {
-
-  return (
-    
-      <p className="bg-red-500">
-        Click on the Vite and React logos to learn more
-      </p>
-    
-  )
+  return <AppRoutes />;
 }
 
-export default App
+export default App;
