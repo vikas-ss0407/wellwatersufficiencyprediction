@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { login, logout, signup, subscribeToAuthChanges } from "../api/authApi";
 
 const AuthContext = createContext(null);
+const PASSWORD_STORAGE_KEY = "ww_user_password";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -9,7 +10,15 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = subscribeToAuthChanges((firebaseUser) => {
-      setUser(firebaseUser);
+      const storedPassword = sessionStorage.getItem(PASSWORD_STORAGE_KEY) || "";
+      setUser(
+        firebaseUser
+          ? {
+              ...firebaseUser,
+              password: storedPassword
+            }
+          : null
+      );
       setAuthLoading(false);
     });
 
@@ -18,18 +27,25 @@ export const AuthProvider = ({ children }) => {
 
   const signupUser = async (payload) => {
     const createdUser = await signup(payload);
-    setUser(createdUser);
-    return createdUser;
+    const password = payload?.password || "";
+    sessionStorage.setItem(PASSWORD_STORAGE_KEY, password);
+    const enrichedUser = { ...createdUser, password };
+    setUser(enrichedUser);
+    return enrichedUser;
   };
 
   const loginUser = async (payload) => {
     const loggedInUser = await login(payload);
-    setUser(loggedInUser);
-    return loggedInUser;
+    const password = payload?.password || "";
+    sessionStorage.setItem(PASSWORD_STORAGE_KEY, password);
+    const enrichedUser = { ...loggedInUser, password };
+    setUser(enrichedUser);
+    return enrichedUser;
   };
 
   const logoutUser = async () => {
     await logout();
+    sessionStorage.removeItem(PASSWORD_STORAGE_KEY);
     setUser(null);
   };
 

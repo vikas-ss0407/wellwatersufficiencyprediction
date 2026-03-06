@@ -31,6 +31,7 @@ export const addHardware = async (data, userId) => {
       productName: data.productName.trim(),
       wellName: data.wellName.trim(),
       thingSpeakChannelId: data.thingSpeakChannelId.trim(),
+      thingSpeakReadApiKey: (data.thingSpeakReadApiKey || "").trim(),
       thingSpeakField: data.thingSpeakField.trim(),
       wellDepth: Number(data.wellDepth),
       wellWidth: Number(data.wellWidth),

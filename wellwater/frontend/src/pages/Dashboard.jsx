@@ -6,7 +6,6 @@ import {
   LayoutDashboard, 
   Activity, 
   Trees, 
-  AlertCircle, 
   Loader2, 
   Waves,
   ShieldCheck
@@ -39,61 +38,62 @@ const Dashboard = () => {
   }, [user?.id]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#064e3b] to-[#0f766e] font-sans text-slate-100">
+    <div className="min-h-screen bg-gradient-to-b from-[#064e3b] to-[#0f766e] font-sans text-slate-100 overflow-x-hidden">
       <Navbar />
 
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-8 lg:flex-row lg:items-start">
-        <div className="lg:w-64">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 lg:flex-row lg:items-start lg:py-12">
+        {/* Sidebar: Top on mobile, Left on Desktop */}
+        <div className="w-full lg:w-64 lg:sticky lg:top-8">
           <Sidebar />
         </div>
 
         <main className="flex-1">
-          {/* 1. TOP STATS BAR */}
+          {/* 1. TOP STATS BAR: Grid adjusts for screens */}
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4"
+            className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
           >
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 p-5 rounded-3xl flex items-center gap-4">
-              <div className="bg-amber-400 p-3 rounded-2xl text-amber-950 shadow-lg shadow-amber-500/20">
-                <LayoutDashboard size={24} />
+            <div className="flex items-center gap-4 rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur-md">
+              <div className="rounded-2xl bg-amber-400 p-3 text-amber-950 shadow-lg shadow-amber-500/20">
+                <LayoutDashboard size={22} />
               </div>
               <div>
-                <p className="text-xs font-bold text-emerald-300 uppercase tracking-widest">Active Nodes</p>
+                <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest">Active Nodes</p>
                 <p className="text-2xl font-black text-white">{products.length}</p>
               </div>
             </div>
             
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 p-5 rounded-3xl flex items-center gap-4">
-              <div className="bg-emerald-500 p-3 rounded-2xl text-white">
-                <ShieldCheck size={24} />
+            <div className="flex items-center gap-4 rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur-md">
+              <div className="rounded-2xl bg-emerald-500 p-3 text-white">
+                <ShieldCheck size={22} />
               </div>
               <div>
-                <p className="text-xs font-bold text-emerald-300 uppercase tracking-widest">System Status</p>
+                <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest">System Status</p>
                 <p className="text-2xl font-black text-white">Secure</p>
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 p-5 rounded-3xl flex items-center gap-4">
-              <div className="bg-cyan-500 p-3 rounded-2xl text-white">
-                <Waves size={24} />
+            <div className="flex items-center gap-4 rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur-md sm:col-span-2 lg:col-span-1">
+              <div className="rounded-2xl bg-cyan-500 p-3 text-white">
+                <Waves size={22} />
               </div>
               <div>
-                <p className="text-xs font-bold text-emerald-300 uppercase tracking-widest">AI Engine</p>
+                <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest">AI Engine</p>
                 <p className="text-2xl font-black text-white">Operational</p>
               </div>
             </div>
           </motion.div>
 
-          {/* 2. MAIN HEADER */}
-          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          {/* 2. MAIN HEADER: Stacks on mobile */}
+          <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
-              <h1 className="text-4xl font-black text-white tracking-tight">Your Farm</h1>
-              <p className="text-emerald-100/60 mt-1">Real-time water level data and predictive analysis.</p>
+              <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">Your Farm</h1>
+              <p className="text-emerald-100/60 mt-2 text-sm lg:text-base">Real-time water level data and predictive analysis.</p>
             </div>
 
             <Link
-              className="group flex items-center gap-2 rounded-2xl bg-amber-400 px-6 py-3.5 text-sm font-black text-amber-950 shadow-xl shadow-amber-500/20 transition hover:bg-amber-300 active:scale-95"
+              className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-400 px-8 py-4 text-sm font-black text-amber-950 shadow-xl shadow-amber-500/20 transition hover:bg-amber-300 active:scale-95 md:w-auto"
               to="/add-hardware"
             >
               <Plus size={18} className="group-hover:rotate-90 transition-transform" />
@@ -103,37 +103,38 @@ const Dashboard = () => {
 
           {/* 3. CONTENT AREA */}
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 text-emerald-300 gap-4">
+            <div className="flex flex-col items-center justify-center py-24 text-emerald-300 gap-4">
               <Loader2 className="animate-spin" size={48} />
-              <p className="font-bold tracking-widest uppercase text-xs">Syncing with ThingSpeak...</p>
+              <p className="font-bold tracking-widest uppercase text-[10px]">Syncing with ThingSpeak...</p>
             </div>
           ) : products.length === 0 ? (
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="rounded-[3rem] border border-dashed border-emerald-400/30 bg-emerald-950/20 p-16 text-center"
+              className="rounded-[2.5rem] border border-dashed border-emerald-400/30 bg-emerald-950/20 p-10 text-center lg:p-20"
             >
-              <div className="mx-auto w-24 h-24 bg-emerald-900/50 rounded-full flex items-center justify-center mb-6 border border-emerald-700">
-                <Trees className="text-emerald-400" size={40} />
+              <div className="mx-auto w-20 h-20 bg-emerald-900/50 rounded-full flex items-center justify-center mb-6 border border-emerald-700">
+                <Trees className="text-emerald-400" size={36} />
               </div>
-              <h3 className="text-2xl font-bold text-white">No active sensors detected</h3>
-              <p className="mt-2 text-emerald-100/50 max-w-sm mx-auto">
+              <h3 className="text-xl font-bold text-white sm:text-2xl">No active sensors detected</h3>
+              <p className="mt-3 text-emerald-100/50 max-w-sm mx-auto text-sm">
                 Begin your journey by linking an ultrasonic sensor node to your dashboard.
               </p>
               <Link
-                className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-black text-emerald-950 shadow-xl transition hover:bg-emerald-50"
+                className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-black text-emerald-950 shadow-xl transition hover:bg-emerald-50 active:scale-95"
                 to="/add-hardware"
               >
                 Connect Your First Well <Plus size={18} />
               </Link>
             </motion.div>
           ) : (
-            <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-2">
+            /* RESPONSIVE GRID: 1 on mobile, 2 on tablet, 2 or 3 on large screens */
+            <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
               {products.map((product, idx) => (
                 <motion.div
                   key={product.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.1 }}
                 >
                   <ProductCard product={product} />
@@ -142,12 +143,12 @@ const Dashboard = () => {
             </section>
           )}
 
-          {/* 4. SYSTEM LOG (Optional Footer) */}
-          <div className="mt-12 p-4 bg-black/20 rounded-2xl border border-white/5 flex items-center gap-3">
-             <Activity className="text-emerald-500 animate-pulse" size={16} />
-             <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-emerald-100/40">
-               ThingSpeak API Latency: 42ms • AI Model Version 3.4
-             </p>
+          {/* 4. SYSTEM LOG */}
+          <div className="mt-12 flex flex-col items-start gap-3 rounded-2xl border border-white/5 bg-black/20 p-5 sm:flex-row sm:items-center">
+            <Activity className="text-emerald-500 animate-pulse shrink-0" size={16} />
+            <p className="text-[9px] uppercase font-bold tracking-[0.15em] text-emerald-100/40 leading-relaxed sm:text-[10px]">
+              ThingSpeak API Latency: 42ms • AI Model Version 3.4 • End-to-End Encrypted
+            </p>
           </div>
         </main>
       </div>

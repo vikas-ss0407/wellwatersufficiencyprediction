@@ -1,5 +1,6 @@
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import AddHardware from "../pages/AddHardware";
+import AccountSettings from "../pages/AccountSettings";
 import Dashboard from "../pages/Dashboard";
 import LandingPage from "../pages/LandingPage";
 import Login from "../pages/Login";
@@ -49,6 +50,7 @@ const AppRoutes = () => {
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/add-hardware" element={<AddHardware />} />
+        <Route path="/settings" element={<AccountSettings />} />
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/product/:id/analysis" element={<WaterAnalysis />} />
       </Route>

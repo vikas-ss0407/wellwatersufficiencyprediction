@@ -4,10 +4,13 @@ import { getWeatherByCoords } from "./weatherApi";
 const BASE_URL = "http://localhost:5000/api/prediction";
 const THINGSPEAK_BASE = "https://api.thingspeak.com/channels";
 
-const fetchThingSpeakData = async (channelId, field) => {
+const fetchThingSpeakData = async (channelId, field, readApiKey) => {
   try {
     const res = await axios.get(
-      `${THINGSPEAK_BASE}/${channelId}/fields/${field}/last.json`
+      `${THINGSPEAK_BASE}/${channelId}/fields/${field}/last.json`,
+      {
+        params: readApiKey ? { api_key: readApiKey } : undefined
+      }
     );
     return Number(res.data[`field${field}`]) || 0;
   } catch {
@@ -23,7 +26,8 @@ export const getPrediction = async (data) => {
     // Fetch real-time data
     const currentWaterLevel = await fetchThingSpeakData(
       data.thingSpeakChannelId,
-      data.thingSpeakField
+      data.thingSpeakField,
+      data.thingSpeakReadApiKey
     );
 
     const weather = await getWeatherByCoords(data.latitude, data.longitude);
