@@ -11,12 +11,25 @@ import {
   Waves, 
   Cpu, 
   ChevronRight,
-  Loader2
+  Loader2,
+  Wifi,
+  WifiOff,
+  Clock3,
+  Activity,
+  Pencil,
+  Trash2,
+  Save,
+  X
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
-import { getHardwareById } from "../api/hardwareApi";
+import {
+  deleteHardwareById,
+  getHardwareById,
+  getSensorStatusByHardwareId,
+  updateHardwareById
+} from "../api/hardwareApi";
 
 const ProductDetails = () => {
   const navigate = useNavigate();
@@ -24,6 +37,23 @@ const ProductDetails = () => {
   const { user } = useAuth();
   const [product, setProduct] = useState(null);
   const [fetching, setFetching] = useState(true);
+  const [sensorStatus, setSensorStatus] = useState(null);
+  const [showAllReadings, setShowAllReadings] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [actionError, setActionError] = useState("");
+  const [editForm, setEditForm] = useState({
+    productName: "",
+    wellName: "",
+    thingSpeakChannelId: "",
+    thingSpeakReadApiKey: "",
+    thingSpeakField: "",
+    wellDepth: "",
+    wellWidth: "",
+    latitude: "",
+    longitude: ""
+  });
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -32,6 +62,19 @@ const ProductDetails = () => {
       try {
         const data = await getHardwareById(id, user.id);
         setProduct(data);
+        setEditForm({
+          productName: data?.productName ?? "",
+          wellName: data?.wellName ?? "",
+          thingSpeakChannelId: data?.thingSpeakChannelId ?? "",
+          thingSpeakReadApiKey: data?.thingSpeakReadApiKey ?? "",
+          thingSpeakField: data?.thingSpeakField ?? "",
+          wellDepth: data?.wellDepth ?? "",
+          wellWidth: data?.wellWidth ?? "",
+          latitude: data?.latitude ?? "",
+          longitude: data?.longitude ?? ""
+        });
+        const detailSensor = await getSensorStatusByHardwareId(id, 12);
+        setSensorStatus(detailSensor || data?.sensor || null);
       } catch (err) {
         console.error(err);
       } finally {
@@ -72,6 +115,79 @@ const ProductDetails = () => {
     { label: "Well Depth", value: `${product.wellDepth} ft`, icon: <Ruler size={20} />, color: "text-amber-400" },
     { label: "Well Width", value: `${product.wellWidth} ft`, icon: <Maximize size={20} />, color: "text-emerald-400" },
   ];
+
+  const sensorOn = Boolean(sensorStatus?.on);
+  const latestValue = sensorStatus?.latestValue;
+  const latestValueText = latestValue !== null && latestValue !== undefined ? `${latestValue}` : "--";
+  const updatedAt = sensorStatus?.lastUpdatedAt ? new Date(sensorStatus.lastUpdatedAt) : null;
+  const updatedAtText = updatedAt && !Number.isNaN(updatedAt.getTime())
+    ? updatedAt.toLocaleString()
+    : "No recent update";
+  const history = Array.isArray(sensorStatus?.history) ? sensorStatus.history : [];
+  const orderedHistory = history.slice().reverse();
+  const visibleReadings = showAllReadings ? orderedHistory : orderedHistory.slice(0, 5);
+
+  const onEditChange = (e) => {
+    setEditForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  const onSaveEdit = async (e) => {
+    e.preventDefault();
+    if (!user?.id || !product?.id) {
+      return;
+    }
+
+    setActionError("");
+    setSaving(true);
+
+    try {
+      const payload = {
+        productName: editForm.productName,
+        wellName: editForm.wellName,
+        thingSpeakChannelId: editForm.thingSpeakChannelId,
+        thingSpeakReadApiKey: editForm.thingSpeakReadApiKey,
+        thingSpeakField: editForm.thingSpeakField,
+        wellDepth: Number(editForm.wellDepth),
+        wellWidth: Number(editForm.wellWidth),
+        latitude: Number(editForm.latitude),
+        longitude: Number(editForm.longitude)
+      };
+
+      const updated = await updateHardwareById(product.id, payload, user.id);
+      setProduct(updated);
+      setSensorStatus((prev) => updated?.sensor || prev);
+      setEditMode(false);
+    } catch (error) {
+      setActionError(error?.message || "Unable to update product.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const onDeleteProduct = async () => {
+    if (!user?.id || !product?.id) {
+      return;
+    }
+
+    const confirmed = window.confirm("Delete this product? This action cannot be undone.");
+    if (!confirmed) {
+      return;
+    }
+
+    setActionError("");
+    setDeleting(true);
+
+    try {
+      await deleteHardwareById(product.id, user.id);
+      navigate("/dashboard");
+    } catch (error) {
+      setActionError(error?.message || "Unable to delete product.");
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#064e3b] to-[#0f766e] font-sans text-slate-100 overflow-x-hidden">
@@ -114,6 +230,156 @@ const ProductDetails = () => {
                 )}
               </div>
 
+              <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                {!editMode ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActionError("");
+                      setEditMode(true);
+                    }}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 py-2 text-xs font-black uppercase tracking-wider text-amber-300 transition hover:bg-amber-500/20"
+                  >
+                    <Pencil size={14} />
+                    Update Product
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditMode(false);
+                      setActionError("");
+                      setEditForm({
+                        productName: product?.productName ?? "",
+                        wellName: product?.wellName ?? "",
+                        thingSpeakChannelId: product?.thingSpeakChannelId ?? "",
+                        thingSpeakReadApiKey: product?.thingSpeakReadApiKey ?? "",
+                        thingSpeakField: product?.thingSpeakField ?? "",
+                        wellDepth: product?.wellDepth ?? "",
+                        wellWidth: product?.wellWidth ?? "",
+                        latitude: product?.latitude ?? "",
+                        longitude: product?.longitude ?? ""
+                      });
+                    }}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-400/30 bg-white/5 px-4 py-2 text-xs font-black uppercase tracking-wider text-slate-200 transition hover:bg-white/10"
+                  >
+                    <X size={14} />
+                    Cancel Edit
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  disabled={deleting}
+                  onClick={onDeleteProduct}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-400/40 bg-rose-500/10 px-4 py-2 text-xs font-black uppercase tracking-wider text-rose-300 transition hover:bg-rose-500/20 disabled:opacity-60"
+                >
+                  {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                  Delete Product
+                </button>
+              </div>
+
+              {actionError && (
+                <div className="mb-8 rounded-xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-200">
+                  {actionError}
+                </div>
+              )}
+
+              {editMode && (
+                <form onSubmit={onSaveEdit} className="mb-10 grid grid-cols-1 gap-3 rounded-2xl border border-white/10 bg-black/20 p-5 md:grid-cols-2">
+                  <input
+                    name="productName"
+                    value={editForm.productName}
+                    onChange={onEditChange}
+                    required
+                    placeholder="Device Label"
+                    className="rounded-xl border border-emerald-700/60 bg-emerald-950/60 px-3 py-2 text-sm text-white outline-none focus:border-amber-400"
+                  />
+                  <input
+                    name="wellName"
+                    value={editForm.wellName}
+                    onChange={onEditChange}
+                    required
+                    placeholder="Well Name"
+                    className="rounded-xl border border-emerald-700/60 bg-emerald-950/60 px-3 py-2 text-sm text-white outline-none focus:border-amber-400"
+                  />
+                  <input
+                    name="thingSpeakChannelId"
+                    value={editForm.thingSpeakChannelId}
+                    onChange={onEditChange}
+                    required
+                    placeholder="ThingSpeak Channel ID"
+                    className="rounded-xl border border-emerald-700/60 bg-emerald-950/60 px-3 py-2 text-sm text-white outline-none focus:border-amber-400"
+                  />
+                  <input
+                    name="thingSpeakField"
+                    value={editForm.thingSpeakField}
+                    onChange={onEditChange}
+                    required
+                    placeholder="ThingSpeak Field"
+                    className="rounded-xl border border-emerald-700/60 bg-emerald-950/60 px-3 py-2 text-sm text-white outline-none focus:border-amber-400"
+                  />
+                  <input
+                    name="thingSpeakReadApiKey"
+                    value={editForm.thingSpeakReadApiKey}
+                    onChange={onEditChange}
+                    placeholder="ThingSpeak Read API Key"
+                    className="rounded-xl border border-emerald-700/60 bg-emerald-950/60 px-3 py-2 text-sm text-white outline-none focus:border-amber-400 md:col-span-2"
+                  />
+                  <input
+                    name="wellDepth"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={editForm.wellDepth}
+                    onChange={onEditChange}
+                    required
+                    placeholder="Well Depth"
+                    className="rounded-xl border border-emerald-700/60 bg-emerald-950/60 px-3 py-2 text-sm text-white outline-none focus:border-amber-400"
+                  />
+                  <input
+                    name="wellWidth"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={editForm.wellWidth}
+                    onChange={onEditChange}
+                    required
+                    placeholder="Well Width"
+                    className="rounded-xl border border-emerald-700/60 bg-emerald-950/60 px-3 py-2 text-sm text-white outline-none focus:border-amber-400"
+                  />
+                  <input
+                    name="latitude"
+                    type="number"
+                    step="0.000001"
+                    value={editForm.latitude}
+                    onChange={onEditChange}
+                    required
+                    placeholder="Latitude"
+                    className="rounded-xl border border-emerald-700/60 bg-emerald-950/60 px-3 py-2 text-sm text-white outline-none focus:border-amber-400"
+                  />
+                  <input
+                    name="longitude"
+                    type="number"
+                    step="0.000001"
+                    value={editForm.longitude}
+                    onChange={onEditChange}
+                    required
+                    placeholder="Longitude"
+                    className="rounded-xl border border-emerald-700/60 bg-emerald-950/60 px-3 py-2 text-sm text-white outline-none focus:border-amber-400"
+                  />
+
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl bg-amber-400 px-4 py-2 text-sm font-black text-amber-950 transition hover:bg-amber-300 disabled:opacity-70 md:col-span-2"
+                  >
+                    {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                    Save Changes
+                  </button>
+                </form>
+              )}
+
               {/* Specs Grid: 2 columns on mobile, 4 on desktop */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-10">
                 {specCards.map((card, i) => (
@@ -123,6 +389,72 @@ const ProductDetails = () => {
                     <p className="mt-1 text-base font-bold text-white md:text-xl">{card.value}</p>
                   </div>
                 ))}
+              </div>
+
+              <div className="mb-10 rounded-[2rem] border border-white/10 bg-black/20 p-6 md:p-8">
+                <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-200/60">Sensor Detail View</p>
+                    <h3 className="mt-1 text-xl font-black text-white">Live Sensor Status</h3>
+                  </div>
+                  <div className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-black ${sensorOn ? "bg-emerald-500/15 text-emerald-300 border border-emerald-400/30" : "bg-rose-500/15 text-rose-300 border border-rose-400/30"}`}>
+                    {sensorOn ? <Wifi size={14} /> : <WifiOff size={14} />}
+                    {sensorOn ? "SENSOR ON" : "SENSOR OFF"}
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-100/40">Latest Sensor Value</p>
+                    <p className="mt-2 text-2xl font-black text-white">{latestValueText}</p>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-100/40">Last Updated</p>
+                    <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-emerald-100">
+                      <Clock3 size={14} className="text-emerald-300/70" />
+                      {updatedAtText}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:col-span-2 lg:col-span-1">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-100/40">Data Source</p>
+                    <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-white">
+                      <Activity size={14} className="text-amber-300" />
+                      ThingSpeak Field {product.thingSpeakField}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-100/45">Recent Readings</p>
+                  {history.length === 0 ? (
+                    <p className="text-sm text-emerald-100/60">No recent sensor readings available.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {visibleReadings.map((entry, idx) => {
+                        const entryTime = entry?.timestamp ? new Date(entry.timestamp) : null;
+                        const entryTimeText = entryTime && !Number.isNaN(entryTime.getTime())
+                          ? entryTime.toLocaleString()
+                          : "Unknown time";
+                        return (
+                          <div key={`${entry.timestamp || "unknown"}-${idx}`} className="flex items-center justify-between rounded-xl bg-black/25 px-3 py-2">
+                            <span className="text-xs text-emerald-100/70">{entryTimeText}</span>
+                            <span className="text-sm font-bold text-white">{entry?.value ?? "--"}</span>
+                          </div>
+                        );
+                      })}
+
+                      {orderedHistory.length > 5 && (
+                        <button
+                          type="button"
+                          onClick={() => setShowAllReadings((prev) => !prev)}
+                          className="mt-2 w-full rounded-xl border border-emerald-400/25 bg-emerald-500/10 px-4 py-2 text-xs font-bold uppercase tracking-wider text-emerald-200 transition hover:bg-emerald-500/20"
+                        >
+                          {showAllReadings ? "Show Less" : "View More"}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* AI Analysis CTA - Reorganized for vertical stacking on mobile */}

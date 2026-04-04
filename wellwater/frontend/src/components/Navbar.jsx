@@ -18,10 +18,15 @@ const Navbar = () => {
   const { isAuthenticated, user, logoutUser } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const onLogout = () => {
-    logoutUser();
-    setIsMenuOpen(false);
-    navigate("/login");
+  const onLogout = async () => {
+    try {
+      await logoutUser();
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      setIsMenuOpen(false);
+    }
   };
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -40,7 +45,7 @@ const Navbar = () => {
             <Droplets size={20} className="text-amber-950 fill-amber-950 md:size-22" />
           </div>
           <span className="text-lg font-black tracking-tighter text-white md:text-xl">
-            WellWater<span className="text-amber-400">AI</span>
+            AquaCortex
           </span>
         </Link>
 

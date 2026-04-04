@@ -5,10 +5,7 @@ import {
   Plus, 
   LayoutDashboard, 
   Activity, 
-  Trees, 
-  Loader2, 
-  Waves,
-  ShieldCheck
+  Trees
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import ProductCard from "../components/ProductCard";
@@ -19,19 +16,15 @@ import { getHardware } from "../api/hardwareApi";
 const Dashboard = () => {
   const { user } = useAuth();
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadProducts = async () => {
       if (!user?.id) return;
-      setLoading(true);
       try {
         const data = await getHardware(user.id);
         setProducts(data);
       } catch (err) {
         console.error("Dashboard Load Error:", err);
-      } finally {
-        setLoading(false);
       }
     };
     loadProducts();
@@ -52,7 +45,7 @@ const Dashboard = () => {
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            className="mb-8 grid grid-cols-1 gap-4"
           >
             <div className="flex items-center gap-4 rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur-md">
               <div className="rounded-2xl bg-amber-400 p-3 text-amber-950 shadow-lg shadow-amber-500/20">
@@ -61,26 +54,6 @@ const Dashboard = () => {
               <div>
                 <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest">Active Nodes</p>
                 <p className="text-2xl font-black text-white">{products.length}</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-4 rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur-md">
-              <div className="rounded-2xl bg-emerald-500 p-3 text-white">
-                <ShieldCheck size={22} />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest">System Status</p>
-                <p className="text-2xl font-black text-white">Secure</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur-md sm:col-span-2 lg:col-span-1">
-              <div className="rounded-2xl bg-cyan-500 p-3 text-white">
-                <Waves size={22} />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest">AI Engine</p>
-                <p className="text-2xl font-black text-white">Operational</p>
               </div>
             </div>
           </motion.div>
@@ -102,12 +75,7 @@ const Dashboard = () => {
           </div>
 
           {/* 3. CONTENT AREA */}
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-24 text-emerald-300 gap-4">
-              <Loader2 className="animate-spin" size={48} />
-              <p className="font-bold tracking-widest uppercase text-[10px]">Syncing with ThingSpeak...</p>
-            </div>
-          ) : products.length === 0 ? (
+          {products.length === 0 ? (
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}

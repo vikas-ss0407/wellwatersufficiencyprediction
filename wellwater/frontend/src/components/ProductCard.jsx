@@ -6,11 +6,24 @@ import {
   MapPin, 
   Zap, 
   ChevronRight, 
-  Database 
+  Database,
+  Wifi,
+  WifiOff,
+  Clock
 } from "lucide-react";
 
 const ProductCard = ({ product }) => {
   const navigate = useNavigate();
+  const sensor = product?.sensor || {};
+  const sensorOn = Boolean(sensor.on);
+  const latestValue = sensor.latestValue;
+  const lastUpdated = sensor.lastUpdatedAt ? new Date(sensor.lastUpdatedAt) : null;
+  const lastUpdatedText = lastUpdated && !Number.isNaN(lastUpdated.getTime())
+    ? lastUpdated.toLocaleString()
+    : "No data";
+  const readingText = latestValue !== null && latestValue !== undefined
+    ? `${latestValue}`
+    : "--";
 
   // Robust navigation handlers
   const goToDetails = () => navigate(`/product/${product.id}`);
@@ -39,8 +52,20 @@ const ProductCard = ({ product }) => {
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-[9px] font-bold text-emerald-400/60 uppercase tracking-widest hidden md:inline">Live</span>
-            <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pulse" />
+            <span
+              className={`text-[9px] font-bold uppercase tracking-widest hidden md:inline ${
+                sensorOn ? "text-emerald-400/70" : "text-rose-300/70"
+              }`}
+            >
+              {sensorOn ? "Sensor On" : "Sensor Off"}
+            </span>
+            <div
+              className={`h-2 w-2 rounded-full ${
+                sensorOn
+                  ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pulse"
+                  : "bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.55)]"
+              }`}
+            />
           </div>
         </div>
 
@@ -69,6 +94,32 @@ const ProductCard = ({ product }) => {
             {product.wellWidth}
             <span className="text-[10px] font-normal opacity-50 ml-1">FT</span>
           </p>
+        </div>
+      </div>
+
+      <div className="px-4 py-3 md:px-5 bg-black/15 border-b border-white/5 space-y-2">
+        <div className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2">
+          <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-emerald-100/50">
+            {sensorOn ? <Wifi size={12} /> : <WifiOff size={12} />}
+            Status
+          </span>
+          <span className={`text-xs font-black ${sensorOn ? "text-emerald-300" : "text-rose-300"}`}>
+            {sensorOn ? "ON" : "OFF"}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded-xl bg-white/5 px-3 py-2">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-emerald-100/40">Latest Value</p>
+            <p className="mt-1 text-sm font-black text-white">{readingText}</p>
+          </div>
+          <div className="rounded-xl bg-white/5 px-3 py-2">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-emerald-100/40">Last Update</p>
+            <p className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-emerald-100/80">
+              <Clock size={11} className="text-emerald-300/70" />
+              {lastUpdatedText}
+            </p>
+          </div>
         </div>
       </div>
 

@@ -143,7 +143,7 @@ const Login = () => {
 
               <div className="mt-8 pt-6 border-t border-white/5 text-center">
                 <p className="text-emerald-100/60 text-sm">
-                  New to SmartWell?{" "}
+                  New to AquaCortex?{" "}
                   <Link className="font-bold text-amber-400 hover:text-amber-300 transition-colors" to="/signup">
                     Join the movement
                   </Link>
@@ -155,7 +155,7 @@ const Login = () => {
       </main>
 
       <footer className="py-8 text-center text-emerald-400/40 text-[9px] md:text-xs font-medium uppercase tracking-[0.2em]">
-        © 2026 SmartWell AI • Powered by Data
+        © 2026 AquaCortex • Powered by Data
       </footer>
     </div>
   );

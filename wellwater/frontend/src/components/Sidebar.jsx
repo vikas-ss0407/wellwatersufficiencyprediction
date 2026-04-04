@@ -31,7 +31,7 @@ const Sidebar = () => {
 
       <nav className="flex flex-col">
         {/* Main Navigation Grid/List */}
-        <ul className="grid grid-cols-2 gap-2 pb-4 md:gap-3 lg:flex lg:pb-0 lg:flex-col lg:space-y-2">
+        <ul className="grid grid-cols-1 gap-2 pb-4 sm:grid-cols-2 md:gap-3 lg:flex lg:pb-0 lg:flex-col lg:space-y-2">
           {navItems.map((item) => {
             const active = location.pathname === item.to;
             
@@ -64,7 +64,7 @@ const Sidebar = () => {
         </ul>
 
         {/* Support Section - Simplified for mobile */}
-        <div className="mt-2 grid grid-cols-2 gap-2 border-t border-white/5 pt-4 lg:mt-8 lg:block lg:space-y-1 lg:pt-8">
+        <div className="mt-2 grid grid-cols-1 gap-2 border-t border-white/5 pt-4 sm:grid-cols-2 lg:mt-8 lg:block lg:space-y-1 lg:pt-8">
            <Link 
             to="/settings" 
             className={`flex items-center justify-center gap-2 rounded-xl border border-white/5 px-3 py-3 text-[10px] md:text-xs font-bold transition-colors lg:justify-start lg:rounded-xl lg:border-0 lg:px-5 lg:py-3 ${
@@ -73,13 +73,13 @@ const Sidebar = () => {
                 : "text-emerald-100/40 hover:text-white hover:bg-white/5"
             }`}
            >
-             <Settings size={14} className="md:size-16" /> Account
+             <Settings size={14} className="sm:size-16" /> Account
            </Link>
            <a
             href="/#contact"
             className="flex items-center justify-center gap-2 rounded-xl border border-white/5 px-3 py-3 text-[10px] md:text-xs font-bold text-emerald-100/40 transition-colors hover:text-white hover:bg-white/5 lg:justify-start lg:rounded-xl lg:border-0 lg:px-5 lg:py-3"
            >
-             <HelpCircle size={14} className="md:size-16" /> Support
+             <HelpCircle size={14} className="sm:size-16" /> Support
            </a>
         </div>
       </nav>

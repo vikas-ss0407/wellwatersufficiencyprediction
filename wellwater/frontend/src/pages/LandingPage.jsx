@@ -96,7 +96,7 @@ const LandingPage = () => {
       <Navbar />
 
       {/* 1. HERO SECTION */}
-      <header className="relative overflow-hidden pt-24 pb-20 lg:pt-44 lg:pb-32">
+      <header className="relative overflow-hidden pt-16 pb-20 lg:pt-32 lg:pb-32">
         <FloatingLeaves />
         <div className="absolute top-0 left-0 w-[200px] h-[200px] lg:w-[400px] lg:h-[400px] bg-amber-400/20 rounded-full blur-[80px] lg:blur-[100px] animate-pulse" />
         
@@ -294,7 +294,7 @@ const LandingPage = () => {
       </section>
 
       <footer className="py-12 text-center text-emerald-400 border-t border-emerald-800 font-medium px-6">
-        <p className="text-sm lg:text-base">© 2026 SmartWell AI Irrigation Planner. Roots in Data.</p>
+        <p className="text-sm lg:text-base">© 2026 AquaCortex Irrigation Planner. Roots in Data.</p>
       </footer>
     </div>
   );

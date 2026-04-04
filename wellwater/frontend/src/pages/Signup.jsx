@@ -184,7 +184,7 @@ const Signup = () => {
       </main>
 
       <footer className="py-8 text-center text-emerald-400/40 text-[10px] md:text-xs font-medium tracking-[0.2em]">
-        © 2026 SMARTWELL AI • PRECISION IRRIGATION
+        © 2026 AQUACORTEX • PRECISION IRRIGATION
       </footer>
     </div>
   );

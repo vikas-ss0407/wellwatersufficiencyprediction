@@ -19,6 +19,20 @@ import { useAuth } from "../context/AuthContext";
 import { getHardwareById } from "../api/hardwareApi";
 import { getPrediction } from "../api/predictionApi";
 
+const getLocalDateTimeMin = () => {
+  const now = new Date();
+  const nextMinute = new Date(now.getTime() + 60 * 1000);
+  nextMinute.setSeconds(0, 0);
+
+  const year = nextMinute.getFullYear();
+  const month = String(nextMinute.getMonth() + 1).padStart(2, "0");
+  const day = String(nextMinute.getDate()).padStart(2, "0");
+  const hours = String(nextMinute.getHours()).padStart(2, "0");
+  const minutes = String(nextMinute.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
 const WaterAnalysis = () => {
   const { id } = useParams();
   const { user } = useAuth();
@@ -32,6 +46,7 @@ const WaterAnalysis = () => {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const minIrrigationStart = getLocalDateTimeMin();
 
   useEffect(() => {
     const load = async () => {
@@ -42,11 +57,23 @@ const WaterAnalysis = () => {
     load();
   }, [id, user?.id]);
 
-  const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (name === "irrigationStart") {
+      setError("");
+    }
+  };
 
   const onAnalyze = async (e) => {
     e.preventDefault();
     if (!product) return;
+
+    if (!form.irrigationStart || form.irrigationStart < minIrrigationStart) {
+      setError("Select today or a future date and time.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
@@ -117,7 +144,7 @@ const WaterAnalysis = () => {
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest ml-1">Planned Start</label>
                     <input className="w-full bg-emerald-950/50 border border-emerald-800 rounded-2xl px-4 py-3.5 text-white outline-none focus:border-amber-400 transition-all text-sm" 
-                      name="irrigationStart" onChange={onChange} required type="datetime-local" value={form.irrigationStart} />
+                      name="irrigationStart" onChange={onChange} required type="datetime-local" min={minIrrigationStart} step="60" value={form.irrigationStart} />
                   </div>
 
                   <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">

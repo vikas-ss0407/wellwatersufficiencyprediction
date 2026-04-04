@@ -1,7 +1,8 @@
 import axios from "axios";
+import apiClient from "./axios";
 import { getWeatherByCoords } from "./weatherApi";
 
-const BASE_URL = "http://localhost:5000/api/prediction";
+const BASE_URL = "/prediction";
 const THINGSPEAK_BASE = "https://api.thingspeak.com/channels";
 
 const fetchThingSpeakData = async (channelId, field, readApiKey) => {
@@ -20,9 +21,17 @@ const fetchThingSpeakData = async (channelId, field, readApiKey) => {
 
 export const getPrediction = async (data) => {
   try {
-    const res = await axios.post(BASE_URL, data);
+    const res = await apiClient.post(BASE_URL, data);
     return res.data;
-  } catch {
+  } catch (error) {
+    // If backend responded, show its message instead of masking it with local fallback.
+    if (error?.response) {
+      const message =
+        error.response?.data?.message ||
+        "Prediction request failed. Please verify hardware and irrigation inputs.";
+      throw new Error(message);
+    }
+
     // Fetch real-time data
     const currentWaterLevel = await fetchThingSpeakData(
       data.thingSpeakChannelId,
